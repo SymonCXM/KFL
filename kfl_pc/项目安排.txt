@@ -1,0 +1,279 @@
+PC端响应式网站：开饭了
+①搭建SPA页面框架
+②编写静态页面
+③使用php来编写页面后台
+④联合调试
+⑤测试
+⑥将代码部署在服务器端
+
+
+
+
+基本流程：
+
+1、产品经理：根据客户的需求，编写需求文档，原型图。
+2、ui/ue 
+3、测试 
+4、开发人员：根据原型图做开发
+①前端：（web、android、iOS） 与后端约定好需要的接口和数据格式
+②后端：写API
+
+先去模拟json数据，能否正常显示，再与后端联合调试，交给测试部门，部署到线上，配合着运营部门，进行开发的迭代
+
+
+
+
+项目的技术架构：
+SPA应用：采用angularJS实现SPA应用（路由、MVC、$http）
+响应式：bootStrap(视图)
+服务器端：php实现与数据库的交互（数据库）
+
+粒度越小越好。
+
+
+
+
+
+
+使用ngRoute搭建SPA应用的基本步骤：
+①引入angular.js angular-route.js
+②创建模块，指定依赖于ng、ngRoute
+③ng-view
+④创建代码片段
+⑤路由词典
+app.config(function($routeProvider){
+
+	$routeProvider.when('/start',{
+		templateUrl:'tpl/start.html',
+		controller:'startCtrl'
+	})
+	.otherwise({redirectTo:'/start'})
+})
+
+跳转：
+① <a href='#/start'></a>
+② $location.path('/start');
+
+参数传递：
+方式1：
+①明确发送和接收 ②配置接收方的路由 $routeParams.id 
+③<a href='#/start/12'></a> $location.path('/start/12');
+方式2：
+借助父控制器或者$rootScope
+方式3：
+localStorage/sessionStorage...
+
+1、项目的搭建
+2、所有静态页面的编写---》运行通畅，数据静态死数据
+3、调用php页面，联调。
+
+
+代码片段：start  main detail order myOrder
+
+一、搭建项目框架
+1、创建项目，添加css、js、img、tpl文件夹，添加必须引用的css、js文件，添加自定义的css、js文件以及img图片，并创 建完整的引导页面kaifanla.html；
+2、编写kaifanla.html文件：
+  定义模块ng-app=”kaifanla”
+  引入bootstrap.css以及自定义的css文件
+  定义用于替换模板的视图
+  引入angular.js angular-route.js文件，并引入自定义的js文件。
+3、添加模板文件：添加 start/main/detail/order/myorder页面，每个页面中删掉原有内容，添加一个文字；
+4、编写 kaifanla.js 文件
+  定义各自的控制器
+  定义路由：为所有模板定义路由，默认跳转到start
+5、测试：跳转是否正常，是否有错误
+
+二、静态页面的编写
+https://css-tricks.com/
+1、起始页 start
+
+①把页面的跳转的方法 （$rootScope/嵌套）
+②内容是水平 垂直居中
+
+2、菜单列表 main
+header/footer/菜品列表
+
+3、详情页 detail
+
+
+4、表单提交页 order、个人中心页 myOrder
+
+
+
+
+
+
+三、编写php页面
+
+分析(9:10 - 9:35 )
+main:
+①分页查询 dish_getbypage.php
+约定：
+传递参数：start（本次要从数据库中哪一行开始去读），每次读5条数据回来。
+
+②根据关键词进行搜索  dish_getbykw.php
+约定：
+传递参数: kw。
+1、解析参数
+2、执行sql ：模糊查询（菜品名称或者原材料名称包含该关键字信息的行全部返回）
+3、将数据返回给客户端
+
+detail:
+①根据id获取详情 dish_getbyid.php
+约定：参数名字did
+
+order:
+①将提交的用户数据插入到数据库中
+order_add.php
+
+userName
+userSex
+userAddr
+userPhone
+userDid
+1、解析传递来的参数(如果有任何一个为空直接返回)
+2、连接数据库，将数据插入到数据库
+3、返回数据 {msg:'success',oid:2} {msg:'error'}
+
+
+
+myOrder:
+①获取当前用户的订单信息 order_getbyphone.php
+
+
+约定：请求的参数phone
+
+1、解析参数
+2、执行sql 多表查询
+3、返回给客户端
+
+（14：15  -  14:30 完成所有的后台页面）
+
+注意事项：
+①初始化数据库，启动apache和mySql
+②工程放在C:/xampp/htdocs/...
+③调试要访问php文件，端口:80. 
+访问php的时候，直接将php文件内容返回了，说明访问的方式是不对的！
+④写完php文件之后，浏览器先去访问，如果测试没问题，接着实现具体的模型数据、视图。
+
+
+
+
+三、SQL语句的基本语法
+
+1、MySQL分页查询
+分页查询的语法如下：
+  SELECT 列名 FROM 表名  LIMIT  起始行, 行数 ;
+
+提示：起始行从0开始；行数指定此次返回的最多可能数。
+
+2、MySQL查询
+精确查询：
+SELECT 列名 FROM 表名 WHERE did=3;
+SELECT 列名 FROM 表名 WHERE name='鸡蛋';
+
+模糊查询：
+SELECT 列名 FROM 表名 WHERE 
+列名 LIKE '%关键字%'
+
+
+3、MySQL获取自增长的键值
+获取最近的一条INSERT语句产生的自增主键，代码如下：
+$id = mysqli_insert_id( $conn );
+
+4、MySQL跨表查询/多表查询
+
+跨表查询时，代码如下所示：
+
+  SELECT 表1.列1，表1.列2, 表2.列3, 表2.列4    FROM 表1, 表2   WHERE 表1.列=表2.列;
+
+
+
+每日一练：
+①画个思维导图
+把ng知识点
+
+②php
+
+③静态页面
+
+
+start
+
+main（3:15 - 3:25）
+1、进入到main，就去加载列表
+2、点击加载更多的按钮，加载数据显示在列表当中
+当没有更多数据显示：没有更多数据可以显示了（同时按钮隐藏）
+dish_getbypage.php 当返回的数据小于5条时，没有更多数据
+3、搜索
+$scope.$watch('变量',function(newValue,oldValue){})
+
+
+detail (15:50 - 16:15)
+
+1、把菜品的id从main传递给detail
+	①发送main 接收方detail
+	②配置接收方的路由
+	/kflDetail --> /kflDetail/:did
+	③接收参数
+	$routeParams.did
+	④发送参数
+2、拿到id发起请求获取详情信息显示在视图
+
+order（16:35 - 17:05）
+
+0、发送参数 将菜品id发给order
+1、获取到用户所输入的信息
+方向2的绑定：ngModel
+2、点击下单，将数据发给服务器
+3、将服务器返回的数据显示
+
+
+在ng中针对 对象 做表单序列化的一个服务：
+返回值=$httpParamSerializerJQLike(对象)
+①初始化
+在控制器中 初始化一个对象
+$scope.order
+②绑定数据
+ng-model="order.userName"
+③序列化
+$httpParamSerializerJQLike
+注入到控制器对象，调用
+var params = $httpParamSerializerJQLike($scope.order)
+
+
+每日一练：完成所有的页面
+myOrder.
+显示个人的订单信息
+当下单成功的时候，将手机号存在本地。
+从本地读取手机号，发起网络请求order_getbyphone.php
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
